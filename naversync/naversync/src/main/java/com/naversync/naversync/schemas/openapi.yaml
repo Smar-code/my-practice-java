@@ -1,0 +1,224 @@
+openapi: 3.1.0
+info:
+  title: booking.com Demand API
+  version: '3.1'
+servers:
+  - url: 'https://demandapi.booking.com/3.1'
+tags:
+  - name: Accommodations
+    description: 'these are the endpoints and sections specific for the stay part of the connected trip.'
+paths:
+  /accommodations/availability:
+    post:
+      summary: Get a property's availability
+      description: 'use this endpoint to return details product availability,price changes of the accommodation matching a given search criteria.'
+      operationId: /accommodations/availability
+      tags :
+        - Accommodations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: AccommodationsAvailabilityInput
+              type: object
+              properties:
+                accommodation:
+                  description: 'A signed integer number that uniqely identifies an accommodation property.'
+                  type: integer
+                  minimum: 1
+                booker:
+                  title: Booker
+                  description: The booker's information.
+                  type: object
+                  properties:
+                    country:
+                      description: the booker country for showing thw best price for that user.
+                      type: string
+                      pattern: '^[a-z]{2}$'
+                    travel_purpose:
+                      description: The travel purpose of the booker.
+                      type: string
+                      enum:
+                        - business
+                        - leisure
+                  required:
+                    - country
+                    - platform
+                checkin:
+                  description: The checkin date.
+                  type: string
+                  format: date
+                checkout:
+                  description: The checkout date.
+                  type: string
+                  format: date
+              required:
+                - accommodation
+                - booker
+                - checkin
+                - checkout
+            example:
+              accommodation: 10004
+              booker:
+                country: nl
+                platform: desktop
+              checkin: '!START_DATE!'
+              checkout: '!END_DATE!'
+              extras:
+                - extra_charges
+              guests:
+                number_of_adults: 2
+                number_of_rooms: 1
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                title: AccommodationsAvailabilityOutput
+                type: object
+                properties:
+                  request_id:
+                    description: Uniquely identifies the request
+                    type: string
+                  data:
+                    title: AccommodationsAvailabilityDataOutput
+                    description: ''
+                    type: object
+                    patternProperties:
+                      id:
+                        description: 'A signed integer number.'
+                        type: integer
+                        minimum: 1
+                      currency:
+                        description: A three leter code that uniquely identifies
+                        type: string
+                        pattern: '^[A-Z]{3}$'
+                        example: EUR
+              example:
+                request_id: 01fr9ez700exycb98w90w5r9sh
+                data:
+                  id: 10004
+                  currency: EUR
+  /orders/details/accommodations:
+    post:
+      summary: list accommodation for orders
+      description: ' The endpoint return all info'
+      operationId:  /orders/details/accommodations
+      tags:
+        - Orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - title: AccommodationsDetailsInputByOrders
+                  type: object
+                  properties:
+                    orders:
+                      description: List of order
+                      type: array
+                      items:
+                        description: order Id
+                        type: string
+                      maxItems: 100
+                    currency:
+                      description: a three letter code
+                      type: string
+                      pattern: '^[A-Z]{3}$'
+                      example: EUR
+                    extras:
+                      description: input parameter
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                          - accommodation_details
+                          - policies
+                          - extra_charges
+                  required:
+                    - orders
+                - title: AccommodationsDetailsInputByReservations
+                  type: object
+                  properties:
+                    reservations:
+                      type: array
+                      items:
+                        description: Accommodation reservation Id
+                        type: integer
+                        format: int64
+                      maxItem: 100
+                    currency:
+                      description: A three letter code
+                      type: string
+                      pattern: '^[A-Z]{3}$'
+                      example: EUR
+                    extras:
+                      description: input parameter to request
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                          - accomodation_details
+                          - policies
+                          - extra_charges
+                  required:
+                    - reservations
+            example:
+              currency: USD
+              extras:
+                - policies
+                - extra_charges
+              reservations:
+                - 2321873123
+                - 4666773123
+      responses:
+        '200':
+          description: succesful response.
+          content:
+            application/json:
+              schema:
+                title: OdersDetailsAccommodationsOutput
+                type: object
+                properties:
+                  request_id:
+                    description: uniquely identifies the request.
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      title: OrdersDetailsDataAccommodationsOutput
+                      description: object containing all the info related to data.
+                      type: object
+                      properties:
+                        id:
+                          description: order id for this accommodation order.
+                          type: string
+                        accommodation:
+                          description: hotel id for this accommodation order.
+                          type: integer
+                        checkin:
+                          description: the checkin date.
+                          type: string
+                          format: date
+              example:
+                request_id: 01234700uytioperruioo00
+                data:
+                  - id: '76543217890987'
+                    accommodation: 123456
+                    checkin: '2022-11-10'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
